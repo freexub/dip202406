@@ -10,15 +10,24 @@ use yii\grid\GridView;
 /** @var app\models\UserBillsSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'User Bills';
+$this->title = 'Мои счета';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<?= $this->render('new-bill', [
+    'model' => $userBillsModel,
+]) ?>
 <div class="user-bills-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Создать', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Создать', ['create'], [
+                'class' => 'btn btn-success',
+                'data' => [
+                    'bs-toggle' => 'modal',
+                    'bs-target' => '#exampleModal'
+                ]
+        ]) ?>
     </p>
 
     <div class="row">

@@ -2,7 +2,6 @@
 
 use yii\helpers\Html;
 use miloschuman\highcharts\Highcharts;
-use yii\web\JsExpression;
 
 /** @var yii\web\View $this */
 /** @var app\models\UserBills $model */
@@ -34,10 +33,8 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
     </div>
 
-    <?php
 
-//    echo Highcharts::widget($model->getDataChart());
-    echo Highcharts::widget([
+    <?php echo Highcharts::widget([
         'scripts' => [
             'modules/exporting',
             'themes/grid-dark',
@@ -60,23 +57,18 @@ $this->params['breadcrumbs'][] = $this->title;
                 ],
             ],
         ]
-    ]);
-
-
-    ?>
+    ]);?>
 
     <div class="row">
-        <?php if ($model->getListAccountTransactions()) : ?>
-            <?php foreach ($model->getListAccountTransactions() as $item) : ?>
+            <?php foreach ($dataProvider->models as $item) : ?>
                 <div class="col col-12 mb-4">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title"><?=($item->amount > 0)? 'Пополнение': $item->categories->name?> <span class="float-md-end badge bg-<?=$item->amountStatus['color']?>">- <?=$item->amount?></span></h5>
+                            <h5 class="card-title"><?=$item->categories->name?> <span class="float-md-end badge bg-<?=($item->categories->active == 0)? 'info':'success'?>"><?=($item->categories->active == 0)? '-':''?> <?=$item->amount?></span></h5>
                             <h7 class="card-subtitle mb-2 text-muted text-small"><?=Yii::$app->formatter->asDate($item->date_create, 'dd.MM.Y');?></h7>
                         </div>
                     </div>
                 </div>
             <?php endforeach; ?>
-        <?php endif; ?>
     </div>
 </div>

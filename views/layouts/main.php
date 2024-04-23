@@ -39,11 +39,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav ms-auto'],
         'items' => [
-            ['label' => 'Меню', 'visible' => Yii::$app->user->can('admin'), 'items' => [
-                    ['label' => 'Сотрудники', 'url' => ['/admin/profile/index']],
-                    ['label' => 'Должности', 'url' => ['/admin/position/index']],
-                ]
-            ],
+//            ['label' => 'Меню', 'visible' => Yii::$app->user->can('admin'), 'items' => [
+//                    ['label' => 'Сотрудники', 'url' => ['/admin/profile/index']],
+//                    ['label' => 'Должности', 'url' => ['/admin/position/index']],
+//                ]
+//            ],
             Yii::$app->user->isGuest
                 ? ['label' => 'Авторизация', 'url' => ['/site/login']]
                 : '<li class="nav-item">'

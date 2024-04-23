@@ -20,6 +20,7 @@ use miloschuman\highcharts\Highcharts;
  */
 class UserBills extends \yii\db\ActiveRecord
 {
+    public $amount;
     /**
      * {@inheritdoc}
      */
@@ -62,7 +63,7 @@ class UserBills extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'user_id' => 'User ID',
-            'title' => 'Title',
+            'title' => 'Название счёта',
             'date_create' => 'Date Create',
             'active' => 'Active',
         ];
@@ -93,17 +94,17 @@ class UserBills extends \yii\db\ActiveRecord
     }
 
     public function getDataChart(){
-        $categories = UserBillsCategoryTransactions::find()->select('category_id')->where(['user_id'=>$this->user_id, 'user_bills_id'=>$this->id])->groupBy('category_id')->all();
+//        $categories = UserBillsCategoryTransactions::find()->select('category_id')->where(['user_id'=>$this->user_id, 'user_bills_id'=>$this->id])->groupBy('category_id')->all();
+        $categories = Category::find()->where(['active'=>0])->all();
 
         $data2 = [];
 
         foreach ($categories as $category){
-            $categoryAmount = $this->amountByCategory($category->category_id);
-            if ($categoryAmount<0) $categoryAmount = ($categoryAmount*-1);
+            $categoryAmount = $this->amountByCategory($category->id);
 
             $data2[]= [
-                'name' => $category->categories->name,
-                'y' =>$categoryAmount ,
+                'name' => $category->name,
+                'y' =>(int)$categoryAmount ,
             ];
         }
 

@@ -6,10 +6,12 @@ use app\models\Category;
 use app\models\UserBills;
 use app\models\UserBillsCategory;
 use app\models\UserBillsCategoryTransactions;
+use app\models\UserBillsCategoryTransactionsSearch;
 use app\models\UserBillsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use Yii;
 
 /**
  * UserBillsController implements the CRUD actions for UserBills model.
@@ -41,10 +43,12 @@ class UserBillsController extends Controller
      */
     public function actionIndex()
     {
+        $userBillsModel = new UserBills();
         $searchModel = new UserBillsSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('index', [
+            'userBillsModel' => $userBillsModel,
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
@@ -58,6 +62,10 @@ class UserBillsController extends Controller
      */
     public function actionView($id)
     {
+        $searchModel = new UserBillsCategoryTransactionsSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider->query->andWhere(['user_bills_id'=>$id]);
+
         $model = $this->findModel($id);
         $modelTransaction = new UserBillsCategoryTransactions();
         $categories = Category::find()->where(['active'=>0])->all();
@@ -76,6 +84,8 @@ class UserBillsController extends Controller
             'model' => $model,
             'categories' => $categories,
             'modelTransaction' => $modelTransaction,
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
         ]);
     }
 
@@ -90,6 +100,15 @@ class UserBillsController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
+                if (isset($_POST["UserBills"])){
+                    $userBillsCategoryTransactions = new UserBillsCategoryTransactions();
+                    $userBillsCategoryTransactions->user_id = $model->user_id;
+                    $userBillsCategoryTransactions->user_bills_id = $model->id;
+                    $userBillsCategoryTransactions->category_id = 1;
+                    $userBillsCategoryTransactions->amount = (int)$_POST["UserBills"]["amount"];
+                    $userBillsCategoryTransactions->save();
+
+                }
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
@@ -113,7 +132,8 @@ class UserBillsController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(Yii::$app->request->referrer);
+//            return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('update', [

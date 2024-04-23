@@ -41,9 +41,10 @@ class UserBillsCategoryTransactionsSearch extends UserBillsCategoryTransactions
     public function search($params)
     {
         $query = UserBillsCategoryTransactions::find()
-        ->where([
-            'user_id' => \Yii::$app->user->id,
-        ])
+            ->where([
+                'user_id' => \Yii::$app->user->id,
+            ])
+            ->andWhere(['<','active',100])
         ->orderBy('id DESC');
 
         // add conditions that should always apply here

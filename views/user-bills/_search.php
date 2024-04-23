@@ -2,33 +2,42 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
+use kartik\date\DatePicker;
 
 /** @var yii\web\View $this */
 /** @var app\models\UserBillsSearch $model */
 /** @var yii\widgets\ActiveForm $form */
 ?>
 
-<div class="user-bills-search">
+<div class=" alert alert-secondary">
 
     <?php $form = ActiveForm::begin([
-        'action' => ['index'],
+        'action' => ['view'],
         'method' => 'get',
     ]); ?>
+    <div class="row">
+        <div class="col">
+            <input type="hidden" value=<?=$model->id?> name="id">
+            <?php echo DatePicker::widget([
+                'name' => 'fdate',
+                'value' => $fdate,
+                'type' => DatePicker::TYPE_RANGE,
+                'separator' => 'До',
+                'name2' => 'ldate',
+                'value2' => $ldate,
+                'pluginOptions' => [
+                    'autoclose' => true,
+                    'format' => 'dd-mm-yyyy'
+                ]
+            ]);?></div>
+        <div class="col-md-auto">
+            <div class="d-grid gap-2 d-md-block">
+                <?= Html::submitButton('Фильтр', ['class' => 'btn btn-primary']) ?>
+            </div>
+        </div>
 
-    <?= $form->field($model, 'id') ?>
-
-    <?= $form->field($model, 'user_id') ?>
-
-    <?= $form->field($model, 'title') ?>
-
-    <?= $form->field($model, 'date_create') ?>
-
-    <?= $form->field($model, 'active') ?>
-
-    <div class="form-group">
-        <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>
-        <?= Html::resetButton('Reset', ['class' => 'btn btn-outline-secondary']) ?>
     </div>
+
 
     <?php ActiveForm::end(); ?>
 

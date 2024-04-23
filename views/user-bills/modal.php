@@ -15,7 +15,7 @@ use yii\widgets\ActiveForm;
             <?php $form = ActiveForm::begin(); ?>
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Изменение баланса</h5>
+                        <h5 class="modal-title" id="exampleModalLabel">Внести сумму</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -23,7 +23,7 @@ use yii\widgets\ActiveForm;
                         <?= $form->field($model, 'user_bills_id')->hiddenInput(['value' => $id])->label(false) ?>
                         <?= $form->field($model, 'amount')->textInput(['type' => 'number']) ?>
                         <?php $i=0; foreach ($categories as $category) : ?>
-                            <input type="radio" class="btn-check" name="UserBillsCategoryTransactions[category_id]" value="<?=$category->id?>" id="option<?=$category->id?>" autocomplete="off" <?= ($i>0)?:'checked'?>>
+                            <input type="radio" class="btn-check" name="UserBillsCategoryTransactions[category_id]" value="<?=$category->id?>" id="option<?=$category->id?>" autocomplete="off" <?=($category->active<1)?:'checked'?>>
                             <label class="btn btn-outline-success mb-2" for="option<?=$category->id?>"><?=$category->name?></label>
                         <?php $i++; endforeach;?>
                     </div>

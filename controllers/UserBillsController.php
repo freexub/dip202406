@@ -29,7 +29,7 @@ class UserBillsController extends Controller
                 'verbs' => [
                     'class' => VerbFilter::className(),
                     'actions' => [
-                        'delete' => ['POST'],
+//                        'delete' => ['POST'],
                     ],
                 ],
             ]
@@ -46,6 +46,7 @@ class UserBillsController extends Controller
         $userBillsModel = new UserBills();
         $searchModel = new UserBillsSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider->query->andWhere(['active'=>0]);
 
         return $this->render('index', [
             'userBillsModel' => $userBillsModel,
@@ -60,15 +61,32 @@ class UserBillsController extends Controller
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id)
+    public function actionView($id, $fdate='', $ldate='')
     {
         $searchModel = new UserBillsCategoryTransactionsSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
-        $dataProvider->query->andWhere(['user_bills_id'=>$id]);
+        $dataProvider->query->andWhere(['user_bills_id'=>$id,'active'=>0]);
+        if (empty($fdate) || empty($ldate)){
+            $date = date('m-Y');
+            $fdate = '01-'.$date;
+            $ldate = date('t',time()).'-'.$date;
+
+//            var_dump(Yii::$app->formatter->asDate($fdate,'yyyy-MM-dd'));
+//            var_dump($fdate);
+//            die();
+        }
+//        var_dump(Yii::$app->formatter->asDate($fdate,'yyyy-MM-dd'));
+//        die();
+        $dataProvider->query->andWhere([
+            'between',
+            'date_create',
+            Yii::$app->formatter->asDate($fdate,'yyyy-MM-dd'),
+            Yii::$app->formatter->asDate($ldate,'yyyy-MM-dd')
+        ]);
 
         $model = $this->findModel($id);
         $modelTransaction = new UserBillsCategoryTransactions();
-        $categories = Category::find()->where(['active'=>0])->all();
+        $categories = Category::find()->all();
 
         if ($this->request->isPost) {
             if ($modelTransaction->load($this->request->post()) && $modelTransaction->save()) {
@@ -86,6 +104,8 @@ class UserBillsController extends Controller
             'modelTransaction' => $modelTransaction,
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'fdate' => $fdate,
+            'ldate' => $ldate,
         ]);
     }
 
@@ -101,13 +121,15 @@ class UserBillsController extends Controller
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
                 if (isset($_POST["UserBills"])){
-                    $userBillsCategoryTransactions = new UserBillsCategoryTransactions();
-                    $userBillsCategoryTransactions->user_id = $model->user_id;
-                    $userBillsCategoryTransactions->user_bills_id = $model->id;
-                    $userBillsCategoryTransactions->category_id = 1;
-                    $userBillsCategoryTransactions->amount = (int)$_POST["UserBills"]["amount"];
-                    $userBillsCategoryTransactions->save();
-
+                    $category = Category::find()->where(['active'=>1])->one();
+                    if ($category){
+                        $userBillsCategoryTransactions = new UserBillsCategoryTransactions();
+                        $userBillsCategoryTransactions->user_id = $model->user_id;
+                        $userBillsCategoryTransactions->user_bills_id = $model->id;
+                        $userBillsCategoryTransactions->category_id = $category->id;
+                        $userBillsCategoryTransactions->amount = (int)$_POST["UserBills"]["amount"];
+                        $userBillsCategoryTransactions->save();
+                    }
                 }
                 return $this->redirect(['view', 'id' => $model->id]);
             }
@@ -150,9 +172,22 @@ class UserBillsController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $model->active = 100;
+        $model->save();
 
         return $this->redirect(['index']);
+    }
+
+
+    public function actionDeleteTransaction($id)
+    {
+        $model = $this->findModelTransaction($id);
+        $model->active = 100;
+        $model->save();
+
+        return $this->redirect(['view','id'=>$model->user_bills_id]);
+
     }
 
     /**
@@ -164,7 +199,16 @@ class UserBillsController extends Controller
      */
     protected function findModel($id)
     {
-        if (($model = UserBills::findOne(['id' => $id])) !== null) {
+        if (($model = UserBills::findOne(['id' => $id, 'user_id'=>Yii::$app->user->id])) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    protected function findModelTransaction($id)
+    {
+        if (($model = UserBillsCategoryTransactions::findOne(['id' => $id, 'user_id'=>Yii::$app->user->id])) !== null) {
             return $model;
         }
 

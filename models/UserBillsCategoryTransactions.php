@@ -58,14 +58,6 @@ class UserBillsCategoryTransactions extends \yii\db\ActiveRecord
         ];
     }
 
-//    public function beforeSave($insert) {
-//        if ($this->isNewRecord) {
-//            $this->user_id = Yii::$app->user->id;
-//        }
-//
-//        return true;
-//    }
-
     /**
      * Gets query for [[User]].
      *

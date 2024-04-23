@@ -93,14 +93,14 @@ class UserBills extends \yii\db\ActiveRecord
         return UserBillsCategoryTransactions::find()->where(['user_id'=>$this->user_id, 'user_bills_id'=>$this->id])->orderBy('date_create DESC')->all();
     }
 
-    public function getDataChart(){
+    public function getDataChart($fdate,$ldate){
 //        $categories = UserBillsCategoryTransactions::find()->select('category_id')->where(['user_id'=>$this->user_id, 'user_bills_id'=>$this->id])->groupBy('category_id')->all();
         $categories = Category::find()->where(['active'=>0])->all();
 
         $data2 = [];
 
         foreach ($categories as $category){
-            $categoryAmount = $this->amountByCategory($category->id);
+            $categoryAmount = $this->amountByCategory($category->id, $fdate, $ldate);
 
             $data2[]= [
                 'name' => $category->name,
@@ -111,12 +111,40 @@ class UserBills extends \yii\db\ActiveRecord
         return $data2;
     }
 
-    function amountByCategory($category_id){
+    function amountByCategory($category_id, $fdate, $ldate){
         return UserBillsCategoryTransactions::find()
             ->select('amount')
             ->where(['user_id'=>$this->user_id,'category_id' => $category_id, 'user_bills_id'=>$this->id])
+            ->andWhere(['<','active',100])
+            ->andWhere([
+                'between',
+                'date_create',
+                Yii::$app->formatter->asDate($fdate,'yyyy-MM-dd'),
+                Yii::$app->formatter->asDate($ldate,'yyyy-MM-dd')
+            ])
             ->asArray()
             ->sum('amount');
+    }
+
+    public function getBalans(){
+        $category = Category::find()->where(['active'=>1])->one();
+        $sum = UserBillsCategoryTransactions::find()
+            ->select('amount')
+            ->andWhere(['<','active',100])
+            ->where(['user_id'=>$this->user_id,'category_id' => $category->id, 'user_bills_id'=>$this->id])
+            ->asArray()
+            ->sum('amount');
+        if (!$sum)
+            $sum = 0;
+
+        $expense = UserBillsCategoryTransactions::find()
+            ->select('amount')
+            ->where(['user_id'=>$this->user_id, 'user_bills_id'=>$this->id])
+            ->andWhere(['!=','category_id', $category->id])
+            ->asArray()
+            ->sum('amount');
+
+        return $sum-$expense;
     }
 
 }
